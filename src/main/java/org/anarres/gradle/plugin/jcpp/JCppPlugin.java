@@ -1,4 +1,4 @@
-package org.anarres.gradle.plugin.cpp;
+package org.anarres.gradle.plugin.jcpp;
 
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
@@ -9,22 +9,22 @@ import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 
 /**
- * The cpp plugin.
+ * The jcpp plugin.
  *
  * This creates a default configuration which preprocesses files
  * according to the CppPluginExtension.
  *
  * @author shevek
  */
-public class CppPlugin implements Plugin<Project> {
+public class JCppPlugin implements Plugin<Project> {
 
     @Override
     public void apply(final Project project) {
-        final CppPluginExtension extension = project.getExtensions().create("cpp", CppPluginExtension.class);
-        Task cppTask = project.getTasks().create("cpp", CppTask.class, new Action<CppTask>() {
+        final JCppPluginExtension extension = project.getExtensions().create("jcpp", JCppPluginExtension.class);
+        Task jcppTask = project.getTasks().create("jcpp", JCppTask.class, new Action<JCppTask>() {
 
             @Override
-            public void execute(CppTask task) {
+            public void execute(JCppTask task) {
                 task.setDescription("Preprocesses C preprocessor files.");
                 // TODO: This isn't lazy evaluation. :-(
                 task.inputDir = project.file(extension.inputDir);
@@ -33,7 +33,7 @@ public class CppPlugin implements Plugin<Project> {
             }
         });
 
-        project.getTasks().getByName("compileJava").dependsOn(cppTask);
+        project.getTasks().getByName("compileJava").dependsOn(jcppTask);
         SourceSetContainer sourceSets = project.getConvention().getPlugin(JavaPluginConvention.class).getSourceSets();
         final SourceSet mainSourceSet = sourceSets.getByName("main");
         mainSourceSet.getJava().srcDir(extension.outputDir);

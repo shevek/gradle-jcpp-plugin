@@ -1,4 +1,4 @@
-package org.anarres.gradle.plugin.cpp;
+package org.anarres.gradle.plugin.jcpp;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -34,7 +34,7 @@ import org.gradle.api.tasks.OutputDirectory;
  *
  * @author shevek
  */
-public class CppTask extends DefaultTask {
+public class JCppTask extends DefaultTask {
 
     private class Listener extends PreprocessorListener {
 
@@ -64,7 +64,7 @@ public class CppTask extends DefaultTask {
     @Input
     public Map<String, Object> contextValues = new HashMap<String, Object>();
 
-    public CppTask() {
+    public JCppTask() {
         doLast(new Action<Task>() {
 
             @Override

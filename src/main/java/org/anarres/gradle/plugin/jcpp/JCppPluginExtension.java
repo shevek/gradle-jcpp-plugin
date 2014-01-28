@@ -1,21 +1,21 @@
-package org.anarres.gradle.plugin.cpp;
+package org.anarres.gradle.plugin.jcpp;
 
 import groovy.lang.Closure;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The cpp plugin extension.
+ * The jcpp plugin extension.
  *
- * This allows configuring the cpp plugin using a
- * <code>cpp { }</code> block.
+ * This allows configuring the jcpp plugin using a
+ * <code>jcpp { }</code> block.
  *
  * @author shevek
  */
-public class CppPluginExtension {
+public class JCppPluginExtension {
 
-    public static final String DEFAULT_INPUT_DIR = "src/main/cpp";
-    public static final String DEFAULT_OUTPUT_DIR = "build/generated-sources/cpp";
+    public static final String DEFAULT_INPUT_DIR = "src/main/jcpp";
+    public static final String DEFAULT_OUTPUT_DIR = "build/generated-sources/jcpp";
 
     public String inputDir = DEFAULT_INPUT_DIR;
     public String outputDir = DEFAULT_OUTPUT_DIR;
