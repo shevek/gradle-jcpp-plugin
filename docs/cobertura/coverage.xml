@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
 
-<coverage line-rate="0.34" branch-rate="0.0" lines-covered="34" lines-valid="100" branches-covered="0" branches-valid="12" complexity="1.7777777777777777" version="2.0.3" timestamp="1390984707814">
+<coverage line-rate="0.34" branch-rate="0.0" lines-covered="34" lines-valid="100" branches-covered="0" branches-valid="12" complexity="1.7777777777777777" version="2.0.3" timestamp="1390986579768">
 	<sources>
 		<source>/home/shevek/java/gradle-jcpp-plugin/src/main/java</source>
 		<source>/home/shevek/java/gradle-jcpp-plugin/src/main/groovy</source>
