@@ -11,19 +11,20 @@ import javax.annotation.Nonnull;
 import org.anarres.cpp.LexerException;
 import org.anarres.cpp.Preprocessor;
 import org.anarres.cpp.PreprocessorListener;
+import org.anarres.cpp.Source;
 import org.anarres.cpp.Token;
 import org.apache.commons.io.FileUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.gradle.api.Action;
-import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.Task;
 import org.gradle.api.file.ConfigurableFileTree;
 import org.gradle.api.file.EmptyFileVisitor;
 import org.gradle.api.file.FileVisitDetails;
+import org.gradle.api.internal.ConventionTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputDirectory;
-import org.gradle.api.tasks.Optional;
+import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputDirectory;
 
 /**
@@ -34,52 +35,71 @@ import org.gradle.api.tasks.OutputDirectory;
  *
  * @author shevek
  */
-public class JCppTask extends DefaultTask {
+public class JCppTask extends ConventionTask {
 
     private class Listener extends PreprocessorListener {
 
         @Override
+        public void handleError(Source source, int line, int column, String msg) throws LexerException {
+            String message = source + ":" + line + ":" + column + ": error: " + msg;
+            throw new GradleException(message);
+        }
+
+        @Override
         protected void print(String msg) {
             getLogger().info(msg);
+            throw new GradleException(msg);
         }
     }
 
     private final Listener listener = new Listener();
-    private final Map<String, String> macros = new HashMap<String, String>();
 
     @InputDirectory
     public File inputDir;
     @OutputDirectory
     public File outputDir;
-    @Input
+    @InputFiles
     public List<File> systemIncludePath = new ArrayList<File>();
-    @InputDirectory
+    @InputFiles
     public List<File> localIncludePath = new ArrayList<File>();
 
     @Input
     public String filter = "**/*.java";
-    @Optional
-    @InputDirectory
-    public File includeDir;
     @Input
-    public Map<String, Object> contextValues = new HashMap<String, Object>();
+    public Map<String, String> macros = new HashMap<String, String>();
+
+    @Nonnull
+    private static List<String> toStringList(@Nonnull List<?> in) {
+        List<String> out = new ArrayList<String>();
+        for (Object i : in)
+            out.add(String.valueOf(i));
+        return out;
+    }
 
     public JCppTask() {
         doLast(new Action<Task>() {
 
             @Override
             public void execute(Task task) {
+                // We have to call the methods so the ConventionMapping can kick in.
+                final File inputDir = getInputDir();
+                final File outputDir = getOutputDir();
+                final List<String> systemIncludePath = toStringList(getSystemIncludePath());
+                final List<String> localIncludePath = toStringList(getLocalIncludePath());
+
                 DefaultGroovyMethods.deleteDir(outputDir);
                 outputDir.mkdirs();
 
                 ConfigurableFileTree inputFiles = getProject().fileTree(inputDir);
                 inputFiles.include(filter);
+                getLogger().info("ConfigurableFileTree is " + inputFiles);
                 inputFiles.visit(new EmptyFileVisitor() {
                     @Override
                     public void visitFile(FileVisitDetails fvd) {
                         try {
+                            getLogger().info("Processing " + fvd.getFile());
                             File outputFile = fvd.getRelativePath().getFile(outputDir);
-                            preprocess(fvd.getFile(), outputFile);
+                            preprocess(fvd.getFile(), outputFile, systemIncludePath, localIncludePath);
                         } catch (LexerException e) {
                             throw new GradleException("Failed to process " + fvd, e);
                         } catch (IOException e) {
@@ -91,22 +111,15 @@ public class JCppTask extends DefaultTask {
         });
     }
 
-    @Nonnull
-    private List<String> toStringList(@Nonnull List<?> in) {
-        List<String> out = new ArrayList<String>();
-        for (Object i : in)
-            out.add(String.valueOf(i));
-        return out;
-    }
-
-    private void preprocess(@Nonnull File input, @Nonnull File output) throws IOException, LexerException {
+    private void preprocess(@Nonnull File input, @Nonnull File output,
+            List<String> systemIncludePath, List<String> localIncludePath) throws IOException, LexerException {
         Preprocessor cpp = new Preprocessor();
         cpp.setListener(listener);
         for (Map.Entry<String, String> e : macros.entrySet()) {
             cpp.addMacro(e.getKey(), e.getValue());
         }
-        cpp.setSystemIncludePath(toStringList(systemIncludePath));
-        cpp.setQuoteIncludePath(toStringList(localIncludePath));
+        cpp.setSystemIncludePath(systemIncludePath);
+        cpp.setQuoteIncludePath(localIncludePath);
 
         File dir = output.getParentFile();
         FileUtils.forceMkdir(dir);
@@ -130,6 +143,26 @@ public class JCppTask extends DefaultTask {
                 }
             }
         }
+    }
+
+    @Nonnull
+    public File getInputDir() {
+        return inputDir;
+    }
+
+    @Nonnull
+    public File getOutputDir() {
+        return outputDir;
+    }
+
+    @Nonnull
+    public List<File> getSystemIncludePath() {
+        return systemIncludePath;
+    }
+
+    @Nonnull
+    public List<File> getLocalIncludePath() {
+        return localIncludePath;
     }
 
 }
