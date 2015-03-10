@@ -37,18 +37,21 @@ import org.gradle.api.tasks.OutputDirectory;
  */
 public class JCppTask extends ConventionTask {
 
-    private class Listener extends PreprocessorListener {
+    private class Listener implements PreprocessorListener {
+
+        public void handleWarning(Source source, int line, int column, String msg) throws LexerException {
+            String message = source + ":" + line + ":" + column + ": warning: " + msg;
+            getLogger().warn(msg);
+        }
 
         @Override
         public void handleError(Source source, int line, int column, String msg) throws LexerException {
             String message = source + ":" + line + ":" + column + ": error: " + msg;
+            getLogger().error(msg);
             throw new GradleException(message);
         }
 
-        @Override
-        protected void print(String msg) {
-            getLogger().info(msg);
-            throw new GradleException(msg);
+        public void handleSourceChange(Source source, String string) {
         }
     }
 
