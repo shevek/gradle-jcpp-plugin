@@ -1,19 +1,31 @@
 buildscript {
-    apply from: file('gradle/buildscript.gradle'), to: buildscript 
+	repositories {
+		mavenLocal()
+		mavenCentral()
+		jcenter()
+		// maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+	}
+
+	dependencies {
+		classpath 'org.anarres.gradle:gradle-stdproject-plugin:1.0.8'
+	}
 }
 
-plugins {
-	id 'nu.studer.plugindev' version '1.0.3'
+apply plugin: 'org.anarres.stdplugin'
+
+stdmodule {
+	description "A gradle plugin for the C pre-processor (cpp/jcpp)."
+	author id: 'shevek', name: 'Shevek', email: 'github@anarres.org'
+	license 'Apache-2.0'
 }
 
-ext.githubProjectName = rootProject.name
+stdplugin {
+	implementation "org.anarres.jcpp", "org.anarres.gradle.plugin.jcpp.JCppPlugin"
+}
+
 group = "org.anarres.gradle"
-
-apply from: file('gradle/convention.gradle')
-apply from: file('gradle/github.gradle')
-apply from: file('gradle/plugin.gradle')
-apply from: file('gradle/check.gradle')
-apply from: file('gradle/license.gradle')
+sourceCompatibility = '1.5'
+targetCompatibility = '1.5'
 
 dependencies {
 	compile gradleApi()
@@ -21,8 +33,6 @@ dependencies {
 	compile 'commons-io:commons-io:2.4'
 }
 
-javadoc {
-	options.links "http://docs.oracle.com/javase/6/docs/api/",
-			"http://www.gradle.org/docs/current/javadoc/",
-			"http://groovy.codehaus.org/api/"
+animalsniffer {
+	skip = true
 }
